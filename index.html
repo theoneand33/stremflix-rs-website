@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stremflix-rs — a native Rust client for Stremio addons</title>
+<meta name="description" content="Stremflix-rs is a desktop client for Stremio addons, written in Rust. It opens in 0.08 s and uses 136 MB of memory, against 0.58 s and 1229 MB for the official Stremio app.">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="hero" id="top">
+  <div class="hero__stage">
+    <img class="hero__bg" src="assets/media/hero-home.jpg" width="1920" height="1200" alt="The Stremflix-rs Home page with Big Buck Bunny as the featured title and a row of Blender open movie posters">
+    <div class="hero__scrim"></div>
+
+    <div class="hero__card">
+      <h1 class="hero__title"><span>Stremflix-rs</span> <span>Stremio addons</span> <span>natively</span></h1>
+      <div class="hero__body">
+        <p class="hero__say" data-rise style="--i:1">Opens in 0.08&nbsp;s. Written in&nbsp;Rust.</p>
+        <ul class="hero__facts" data-rise style="--i:2"><li>egui interface</li><li>libmpv playback</li><li>librqbit torrents</li></ul>
+      </div>
+      <div class="hero__foot" data-rise style="--i:3">
+        <span class="small">Linux, macOS, Windows</span>
+        <a class="button" href="https://github.com/theoneand33/stremflix-rs/releases">Download</a>
+        <a class="link-plain small" href="https://github.com/theoneand33/stremflix-rs">Source on GitHub</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section class="perf wrap" id="performance">
+  <div class="perf__intro">
+    <h2 class="head" data-reveal>Measured against Stremio</h2>
+    <p data-reveal style="--i:1">Both apps launched ten times on the same Linux desktop: Stremflix-rs as a release build, the official Stremio app from Flathub (1.2.2). These are the medians.</p>
+    <p class="perf__note" data-reveal style="--i:2">i7-10700KF, 32&nbsp;GB RAM, GTX 1070 Ti, 1920×1080 Wayland through XWayland. Memory sums every process an app started; PSS splits shared pages, the fairer figure for Stremio’s multi-process layout. Stremio also bundles a streaming server and a full web UI. Playback, scrolling, search latency and GPU load were not measured.</p>
+  </div>
+  <div class="bench" data-reveal style="--i:1">
+    <p class="sr-only">Stremflix-rs against Stremio, median of 10 launches</p>
+    <ul>
+      <li class="bench__tile">
+        <p class="bench__x">7×<span>faster</span></p>
+        <p class="bench__label">Time to first visible window</p>
+        <p class="bench__raw"><strong>0.08&nbsp;s</strong> vs 0.58&nbsp;s</p>
+      </li>
+      <li class="bench__tile">
+        <p class="bench__x">9×<span>less</span></p>
+        <p class="bench__label">Memory 15&nbsp;s after launch, RSS</p>
+        <p class="bench__raw"><strong>136&nbsp;MB</strong> vs 1229&nbsp;MB</p>
+      </li>
+      <li class="bench__tile">
+        <p class="bench__x">12×<span>less</span></p>
+        <p class="bench__label">Memory 15&nbsp;s after launch, PSS</p>
+        <p class="bench__raw"><strong>86&nbsp;MB</strong> vs 1018&nbsp;MB</p>
+      </li>
+      <li class="bench__tile">
+        <p class="bench__x">8×<span>fewer</span></p>
+        <p class="bench__label">Processes</p>
+        <p class="bench__raw"><strong>1</strong> vs 8</p>
+      </li>
+      <li class="bench__tile">
+        <p class="bench__x">26×<span>less</span></p>
+        <p class="bench__label">CPU time in the first 15&nbsp;s</p>
+        <p class="bench__raw"><strong>0.2&nbsp;s</strong> vs 4.5&nbsp;s</p>
+      </li>
+      <li class="bench__tile">
+        <p class="bench__x">3×<span>smaller</span></p>
+        <p class="bench__label">On disk, binary and Flatpak alone</p>
+        <p class="bench__raw"><strong>42&nbsp;MB</strong> vs 134&nbsp;MB</p><p class="sr-only">libmpv and the Flatpak runtime are extra</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="play" id="player">
+  <div class="play__plate" data-reveal>
+    <figure class="play__shot">
+      <img src="assets/media/shot-player.jpg" width="1920" height="1200" alt="The player during Tears of Steel, with the seek bar, volume and the Audio, Subtitles and Playback buttons" loading="lazy">
+      <img src="assets/media/shot-stats.jpg" width="1920" height="1200" alt="The same player with the I stats overlay: H.264 1280×534 at 24 fps, hardware decoding off, 94 dropped frames, 282.7 s buffered" loading="lazy" hidden>
+    </figure>
+  </div>
+
+  <div class="play__side">
+    <h2 class="head" data-reveal>The built-in player</h2>
+
+    <div class="play__tabs" role="group" aria-label="Where the video comes from" data-reveal style="--i:1">
+      <button type="button" aria-pressed="true" data-src="http">HTTP stream</button>
+      <button type="button" aria-pressed="false" data-src="torrent">Torrent</button>
+      <button type="button" aria-pressed="false" data-src="local">Local file</button>
+    </div>
+
+    <div class="play__panels" data-reveal style="--i:2">
+      <div data-panel="http">
+        <h3>Straight from the addon</h3>
+        <p>An addon answers with a stream URL and libmpv plays it inside the app window. Only http and https URLs are accepted.</p>
+      </div>
+      <div data-panel="torrent" hidden>
+        <h3>Torrents, streamed</h3>
+        <p>Play a magnet or a .torrent from Library, drop one on the window, or paste a magnet anywhere. With no cache set, the files are deleted when playback stops.</p>
+      </div>
+      <div data-panel="local" hidden>
+        <h3>Folders you already have</h3>
+        <p>Add a folder in Library and play its video files, or pass a file path on the command line. No addon is involved.</p>
+      </div>
+
+      <dl class="keys">
+        <div><dt><span>Space</span><span>K</span></dt><dd>pause</dd></div>
+        <div><dt><span>←</span><span>→</span></dt><dd>skip 10&nbsp;s</dd></div>
+        <div><dt><span>Shift</span><span>←</span><span>→</span></dt><dd>skip 30&nbsp;s</dd></div>
+        <div><dt><span>↑</span><span>↓</span></dt><dd>volume</dd></div>
+        <div><dt><span>M</span></dt><dd>mute</dd></div>
+        <div><dt><span>,</span><span>.</span></dt><dd>step one frame</dd></div>
+        <div><dt><span>I</span></dt><dd>playback stats</dd></div>
+        <div><dt><span>F</span></dt><dd>full screen</dd></div>
+        <div><dt><span>Esc</span></dt><dd>leave full screen</dd></div>
+      </dl>
+    </div>
+
+    <div class="play__actions" data-reveal style="--i:3">
+      <button type="button" class="cell" data-stats aria-pressed="false">Press I: playback stats</button>
+    </div>
+  </div>
+</section>
+
+<section class="does" id="features">
+  <h2 class="head wrap" data-reveal>What it does</h2>
+
+  <div class="sheets">
+    <article class="sheet" style="--n:0">
+      <h3 class="sheet__name">Search every catalog</h3>
+      <p class="sheet__text">Press Enter in the header search and a results page opens with one row for each catalog that supports search. Rows fill in as each addon replies.</p>
+      <div class="sheet__fig" data-ui>
+        <img src="assets/media/shot-search.jpg" width="900" height="640" alt="Results for “blender”: one row each from the Open Movies and Recent Releases catalogs" loading="lazy">
+      </div>
+    </article>
+
+    <article class="sheet sheet--paper" style="--n:1">
+      <h3 class="sheet__name">Series that keep going</h3>
+      <p class="sheet__text">Pick a season and an episode. The next-episode button opens the next one, and when the stream has a bingeGroup it autoplays a stream from the same group. A Skip button appears over intros, recaps and credits.</p>
+      <div class="sheet__fig" data-ui>
+        <img src="assets/media/shot-series.jpg" width="1000" height="640" alt="A series page: 720p and 1080p streams grouped under their addon, then the Season 1 episode list" loading="lazy">
+      </div>
+    </article>
+
+    <article class="sheet sheet--deep" style="--n:2">
+      <h3 class="sheet__name">Resume from the poster</h3>
+      <p class="sheet__text">Hover a poster and press play. Continue Watching resumes with the same stream; a series picks up the episode in progress or starts the next. The × in a card’s corner removes it. Progress is saved in SQLite.</p>
+      <div class="sheet__fig" data-ui>
+        <img src="assets/media/shot-continue.jpg" width="880" height="300" alt="The Continue Watching row: Tears of Steel hovered, showing its play button, the × in its corner and “00:01:21 / 00:12:14”" loading="lazy">
+      </div>
+    </article>
+
+    <article class="sheet sheet--paper2" style="--n:3">
+      <h3 class="sheet__name">Addons by manifest URL</h3>
+      <p class="sheet__text">Paste a manifest URL or open a stremio:// link, then press Install. Addons run in your priority order, each shows whether it is reachable, and the client ships with none built in.</p>
+      <div class="sheet__fig" data-ui>
+        <img src="assets/media/shot-addons.jpg" width="820" height="420" alt="The Addons screen: the manifest URL field, three addons in priority order with Up and Down, marked Reachable, Timed out and Unreachable" loading="lazy">
+      </div>
+    </article>
+
+    <article class="sheet sheet--last" style="--n:4">
+      <h3 class="sheet__name">Bring your Stremio along</h3>
+      <div class="sheet__text">
+        <table class="where">
+          <caption>Where auto-detect looks</caption>
+          <tbody>
+            <tr><th scope="row">Linux</th><td>~/.var/app/com.stremio.Stremio and ~/.local/share/*stremio*</td></tr>
+            <tr><th scope="row">macOS</th><td>~/Library/WebKit/*stremio* and ~/Library/Application Support/*stremio*</td></tr>
+            <tr><th scope="row">Windows</th><td>*stremio* folders in %APPDATA%, %LOCALAPPDATA% and %LOCALAPPDATA%\Programs</td></tr>
+          </tbody>
+        </table>
+        <p>Import from Stremio copies addons, saved titles, watched titles and progress from a local install, reading a temp copy and never changing its files. Or sign in to your Stremio account and sync addons and library one way: nothing is uploaded.</p>
+      </div>
+      <div class="sheet__fig" data-ui>
+        <img src="assets/media/shot-import.jpg" width="780" height="90" alt="The Addons screen: the Stremio data field set to auto-detect, with Import from Stremio" loading="lazy">
+        <img src="assets/media/shot-account.jpg" width="820" height="100" alt="Settings, Stremio account: email and password fields and a Sign in button" loading="lazy">
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="proof" id="extras">
+  <div class="proof__card" data-reveal>
+    <h2>Also in the player</h2>
+    <img src="assets/media/shot-skip.jpg" alt="Sintel playing, with the Skip intro button above the seek bar" width="1920" height="1200" loading="lazy">
+    <p class="proof__say">Skip spans come from the addon, chapter names or TheIntroDB, which you can switch off.</p>
+    <ul class="proof__list">
+      <li>Sleep timer: 15, 30, 60 or 90 minutes</li>
+      <li>Pause while the window is minimized</li>
+      <li>Speed, repeat and an A-B loop</li>
+      <li>Hardware decoding on or off</li>
+      <li>Hand the stream to an external player</li>
+      <li>Audio and subtitle panels</li>
+      <li>YouTube streams and trailers through yt-dlp</li>
+      <li>Torrent cache, peer profiles and speed limits</li>
+    </ul>
+  </div>
+</section>
+
+<section class="cta-sec" id="download">
+  <a class="cta" href="https://github.com/theoneand33/stremflix-rs/releases">
+    <p class="cta__say">Builds for Linux, macOS and Windows are on GitHub. Release builds tell you when a newer one is out.</p>
+    <svg class="cta__arrow" viewBox="0 0 48 48" aria-hidden="true"><path d="M10 38L38 10M16 10h22v22" fill="none" stroke="currentColor" stroke-width="5"/></svg>
+    <h2 class="cta__word">Download</h2>
+  </a>
+</section>
+
+</main>
+
+<footer class="foot">
+  <h2 class="foot__mark">Stremflix-rs</h2>
+
+  <div class="foot__row wrap">
+    <ul class="foot__places">
+      <li><a href="https://github.com/theoneand33/stremflix-rs/releases">Linux x86_64 and arm64</a><span>.AppImage, bundles libmpv. .tar.gz, needs system libmpv.</span></li>
+      <li><a href="https://github.com/theoneand33/stremflix-rs/releases">macOS arm64 and x86_64</a><span>.tar.gz with Stremflix-rs.app</span></li>
+      <li><a href="https://github.com/theoneand33/stremflix-rs/releases">Windows x86_64</a><span>.zip, includes libmpv-2.dll</span></li>
+    </ul>
+
+    <div class="foot__cols">
+      <div>
+        <h3>Build from source</h3>
+        <p>Rust 1.95 or newer and libmpv. yt-dlp is optional, for YouTube.</p>
+<pre><code>cargo build
+cargo run --bin stremflix-rs</code></pre>
+      </div>
+      <div>
+        <h3>Releases</h3>
+        <p>Archives are named stremflix-rs-&lt;tag&gt;-&lt;target&gt;. A nightly runs every 3 hours when main has new commits; tagged releases are cut by hand.</p>
+      </div>
+      <div>
+        <h3>Project</h3>
+        <ul>
+          <li><a class="link-plain" href="https://github.com/theoneand33/stremflix-rs">Source</a></li>
+          <li><a class="link-plain" href="https://github.com/theoneand33/stremflix-rs/blob/main/ARCHITECTURE.md">Architecture</a></li>
+          <li><a class="link-plain" href="https://github.com/theoneand33/stremflix-rs/blob/main/TODO.md">Planned work</a></li>
+          <li><a class="link-plain" href="https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/protocol.md">Addon protocol</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot__legal wrap">
+    <p>The client contains no hardcoded addons, catalogs, trackers or other content sources, and it has no DRM circumvention. Install only addons and play only content you have the rights to. Stremflix-rs is an independent project, not affiliated with or endorsed by SmartCode Ltd, the makers of Stremio. Titles in the screenshots are the Blender Foundation’s open movies (CC BY 3.0 and 4.0), resized: Big Buck Bunny, Sintel, Tears of Steel, Elephants Dream, Cosmos Laundromat.</p>
+    <a class="link-plain" href="#top">Back to top</a>
+  </div>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>
